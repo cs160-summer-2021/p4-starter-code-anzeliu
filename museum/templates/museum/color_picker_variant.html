@@ -1,0 +1,148 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Color Picker</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+
+<style type="text/css">
+        #pageName {
+            color: #30251E;
+            margin: auto;
+            text-align: center;
+            font-size: 8vw;
+	        line-height: 100%;
+	        letter-spacing: 2px;
+        }
+
+        .circle {
+            width: 10vw;
+            height: 8vh;
+            border-radius: 50%;
+            margin-left: 40px;
+            margin-right: 40px;
+            margin-top: 35px;
+        }
+
+        .circleLarge {
+            width: 10vw;
+            height: 8vh;
+            border-radius: 50%;
+            margin-left: 40px;
+            margin-right: 40px;
+            margin-top: 35px;
+            transform: scale(1.3);
+            filter: drop-shadow(5px 5px 10px black);
+            position: relative;
+        }
+
+        .shelf {
+            width: 85vw;
+            transform: translateY(-20px);
+            position: relative;
+        }
+</style>
+</head>
+<body style="background-color: #E6D5AA">
+    <div class = "container-fluid">
+        <div class = "row" style="background-color: #aebea1; border: .3vh solid #30251E; height: 8vh">
+            <div class = "col-2" id = "pageName">
+                <svg xmlns="http://www.w3.org/2000/svg" onclick = "window.location.href = 'drawing_pad_variant'" width="100" height="100" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                </svg>
+            </div>
+            <div class = "col-10" id = "pageName" style = "margin-left: -80px">
+                Color Palette
+            </div>
+        </div>
+
+        <div class = "row align-items-center justify-content-center" style = "height: 10vh;">
+            <div id = "selectedColorDisplay" class = "row justify-content-center align-items-center" style = "border: 5px solid #000000; height: 8vh; width: 85vw;">
+                <h1 style = "font-size: 4rem; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; color: white;"> 
+                    Selected Color 
+                </h1>
+            </div>
+        </div>
+
+        <div class = "row align-items-center justify-content-center" style="height: 80vh; padding: 10px 50px 20px 50px;">
+                <div class = "row shelf" style = "background-color: rgba(255, 0, 0, 0.26); height: 15%">
+                    <div id = "#FF0000" onclick = "color('#FF0000')" class = "col circle" style = 'background-color: #FF0000' ></div>
+                    <div id = "#FF8181" onclick = "color('#FF8181')" class = "col circle" style = 'background-color: #FF8181'></div>
+                    <div  id = "#9C0303" onclick = "color('#9C0303')" class = "col circle" style = 'background-color: #9C0303'></div>
+                </div>
+                <div class = "row shelf" style = "background-color: rgba(255, 138, 0, 0.26); height: 15%">
+                    <div id = "#FF8A00" onclick = "color('#FF8A00')" class = "col circle" style = 'background-color: #FF8A00'></div>
+                    <div id = "#FFC581" onclick = "color('#FFC581')" class = "col circle" style = 'background-color: #FFC581'></div>
+                    <div id = "#904E00" onclick = "color('#904E00')" class = "col circle" style = 'background-color: #904E00'></div>
+                </div>
+                <div class = "row shelf" style = "background-color: rgba(250, 255, 0, 0.26); height: 15%">
+                    <div id = "#FAFF00" onclick = "color('#FAFF00')" class = "col circle" style = 'background-color: #FAFF00'></div>
+                    <div id = "#FFF492" onclick = "color('#FFF492')" class = "col circle" style = 'background-color: #FFF492'></div>
+                    <div id = "#A99801" onclick = "color('#A99801')" class = "col circle" style = 'background-color: #A99801'></div>
+                </div>
+                <div class = "row shelf" style = "background-color: rgba(5, 255, 0, 0.26); height: 15%">
+                    <div id = "#05FF00" onclick = "color('#05FF00')" class = "col circle" style = 'background-color: #05FF00'></div>
+                    <div id = "#AEFF92" onclick = "color('#AEFF92')" class = "col circle" style = 'background-color: #AEFF92'></div>
+                    <div id = "#009806" onclick = "color('#009806')" class = "col circle" style = 'background-color: #009806'></div>
+                </div>
+                <div class = "row shelf" style = "background-color: rgba(0, 163, 255, 0.26); height: 15%">
+                    <div id = "#00A3FF" onclick = "color('#00A3FF')" class = "col circle" style = 'background-color: #00A3FF'></div>
+                    <div id = "#9CDBFF" onclick = "color('#9CDBFF')" class = "col circle" style = 'background-color: #9CDBFF'></div>
+                    <div id = "#0075B7" onclick = "color('#0075B7')" class = "col circle" style = 'background-color: #0075B7'></div>
+                </div>
+                <div class = "row shelf" style = "background-color: rgba(158, 0, 255, 0.26); height: 15%">
+                    <div id = "#9E00FF" onclick = "color('#9E00FF')" class = "col circle" style = 'background-color: #9E00FF'></div>
+                    <div id = "#DDA6FF" onclick = "color('#DDA6FF')" class = "col circle" style = 'background-color: #DDA6FF'></div>
+                    <div id = "#4F0080" onclick = "color('#4F0080')" class = "col circle" style = 'background-color: #4F0080'></div>
+                </div>
+                <div class = "row shelf" style = "background-color: rgba(0, 0, 0, 0.26); height: 15%">
+                    <div id = "#000000" onclick = "color('#000000')" class = "col circle" style = 'background-color: #000000'></div>
+                    <div id = "#838383" onclick = "color('#838383')" class = "col circle" style = 'background-color: #838383'></div>
+                    <div id = "#FFFFFF" onclick = "color('#FFFFFF')" class = "col circle" style = 'background-color: #FFFFFF'></div>
+                </div>
+        </div>
+    </div>
+<script type="text/javascript">
+    window.onload = function() {
+        var currentColor = sessionStorage.getItem("color");
+        if (currentColor == null) {
+            currentColor = "#FF0000";
+        }
+        document.getElementById("selectedColorDisplay").style.backgroundColor = currentColor;
+        document.getElementById(currentColor).className = "col circleLarge";
+    }
+	var savedColor;
+    function color(hex) {
+        document.getElementById(hex).className = "col circleLarge";
+    	savedColor = hex; 
+        document.getElementById("selectedColorDisplay").style.backgroundColor = hex;
+        deselect();
+        saveToDrawingPad();
+ 	}
+    const allColors = ["#FF0000", "#FF8181", "#9C0303", 
+                    "#FF8A00", "#FFC581", "#904E00",
+                    "#FAFF00", "#FFF492", "#A99801", 
+                    "#05FF00", "#AEFF92", "#009806",  
+                    "#00A3FF", "#9CDBFF", "#0075B7",
+                    "#9E00FF", "#DDA6FF", "#4F0080", 
+                    "#000000", "#838383", "#FFFFFF"
+                    ];
+    function deselect() {
+        for (let i = 0; i < 21; i++) {
+            if (savedColor != allColors[i]) {
+                var currColor = allColors[i];
+                document.getElementById(currColor).className = "col circle";
+            }
+        }
+	}
+    function saveToDrawingPad() {
+        sessionStorage.setItem("color", savedColor);
+    }
+</script>
+</body>
+</html>

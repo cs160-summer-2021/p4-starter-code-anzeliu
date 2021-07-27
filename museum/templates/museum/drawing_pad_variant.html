@@ -1,0 +1,629 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Drawing Pad</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'museum/css/main.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'museum/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script type="text/javascript" src="{% static 'museum/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'museum/vendor/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'museum/vendor/paper/paper-full.min.js' %}"></script>
+
+<style type="text/css">
+
+
+	#myCanvas {
+		padding-left: 0;
+		padding-right: 0;
+		margin-left: auto;
+		margin-right: auto;
+		display: block;
+	}
+
+	.padButton {
+        background-color: #AEBEA1;
+        color: black;
+        height: 10vh;
+        border-width: .vh;
+        border-style: solid;
+        border-color: #30251E;
+        font-size: 5vh;
+        font-weight: 900;
+        text-align: center;
+        line-height: 16.6vw;
+	}
+
+	.padIcon {
+    	height: 50px;
+	}
+
+	#canvasSheet {
+        position: absolute;
+        top: 11vh;
+        left: 1vw;
+        height: 74vh;
+        width: 98vw;
+        background-color: #ffffff;
+	}
+
+	.icon {
+        position: relative;
+        padding-top: 5vh;
+	}
+
+	#undoButton {
+        color: rgba(0, 0, 0, .5);
+	}
+
+	#redoButton {
+        color: rgba(0, 0, 0, .5);
+	}
+
+	.colorButton {
+        color: white;
+        height: 10vh;
+        text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+        border-width: .3vh;
+        border-style: solid;
+        border-color: #30251E;
+        text-align: center;
+        font-size: 5vw;
+        line-height: 16.6vw;
+	}
+
+	.modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        /* Stay in place */
+        z-index: 1;
+        /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%;
+        /* Full width */
+        height: 100%;
+        /* Full height */
+        overflow: auto;
+        /* Enable scroll if needed */
+        background-color: fbfbdb;
+        /* Fallback color */
+        background-color: rgba(251, 251, 219, 0.4);
+        /* Black w/ opacity */
+	}
+
+
+	/* Modal Content/Box */
+	.modal-content {
+    	background-color: #ffffff;
+    	margin: 15% auto;
+    	/* 15% from the top and centered */
+    	border: 1px solid #888;
+    	width: 80%;
+	}
+
+    #message {
+        border-color: #30251E;
+        background-color: #a2b4ac;
+        line-height: 6vh;
+        font-size: 5vh;
+        text-align: center;
+        padding-top: 1.5vh;
+        padding-bottom: 1.5 vh;
+    }
+	.close:hover,
+	.close:focus {
+    	color: black;
+    	text-decoration: none;
+    	cursor: pointer;
+	}
+</style>
+
+<script type="text/javascript" canvas="canvas">
+	console.log("script 1 runs");
+	var pencil, brush, crayon, eraser, fill, nothing;
+	function undo() {};
+	function redo() {};
+	function getPicJSON() {};
+	function getPicGroupJSON() {};
+	function getPreviousGroups() {};
+	function getUndoneGroups() {};
+	function clearImage() {};
+	var canvas, saveCanvas;
+	var mainScope, saveScope;
+	var colorFromPicker;
+	window.onload = function() {
+		canvas = document.getElementById('myCanvas');
+		saveCanvas = document.getElementById("saveCanvas");
+		mainScope = new paper.PaperScope();
+		saveScope = new paper.PaperScope();
+
+		colorFromPicker = sessionStorage.getItem("color");
+		if (colorFromPicker == null){
+			colorFromPicker = "#FF0000";
+		}
+		$(".strokeColor").css("background-color", colorFromPicker);
+		function init(custom){
+			saveScope.setup(saveCanvas);
+			mainScope.setup(canvas);
+			mainScope.activate();
+			console.log("running init");
+			with(paper) {
+				var paths = [];
+				var undonePaths = [];
+				var previousGroups = [];
+				var localPrevGroups = sessionStorage.getItem("previousGroups");
+				try{
+					previousGroups = JSON.parse(localPrevGroups);
+					console.log(previousGroups);
+				} catch {
+					console.log("problem importing prev groups");
+					var previousGroups = [];
+				}
+				var undoneGroups = [];
+				var localUndoneGroups = sessionStorage.getItem("undoneGroups");
+				try{
+					undoneGroups = JSON.parse(localUndoneGroups);
+				} catch {
+					console.log("problem importing undone groups");
+					undoneGroups = [];
+				}
+				var picture = new Group();
+				try {
+					picture.importJSON(sessionStorage.getItem("currentPic"));
+					console.log(picture);
+				} catch {
+					console.log("problem importing pic");
+				}
+				if (undoneGroups == null) {
+					undoneGroups = [];
+				}
+				if (previousGroups == null) {
+					previousGroups = [];
+				}
+				if (undoneGroups.length != 0) {
+					$('#redoButton').css("color", "black");
+				}
+				if (previousGroups.length != 0) {
+					$('#undoButton').css("color", "black");
+				}
+
+				var curPath = null;
+
+				function drawDown(event, width) {
+					previousGroups.push(picture.exportJSON());
+					curPath = new Path();
+					curPath.strokeColor = colorFromPicker;
+					curPath.strokeWidth = width;
+					curPath.strokeCap = 'round';
+					curPath.strokeJoin = 'round';
+				}
+
+				function eraseDown(event, width) {
+					previousGroups.push(picture.exportJSON());
+					curPath = new Path();
+					curPath.strokeColor = "#fbfbdb";
+					curPath.strokeWidth = width;
+					curPath.strokeCap = 'round';
+					curPath.strokeJoin = 'round';
+				}
+
+				function drawUp(event, closeDist) {
+					if(event.point.getDistance(curPath.firstSegment.point) < closeDist) {
+						curPath.closed = true;
+						curPath.fill = true;
+						curPath.fillColor = "red";
+						curPath.fillColor.alpha = .000001;
+					}
+					picture.addChild(curPath);
+					undoneGroups = [];
+					$('#redoButton').css("color", "rgba(0,0,0,0.5)");
+					$('#undoButton').css("color", "black");
+				}
+
+				pencil = new Tool();
+				pencil.onMouseDown = function(event) {
+					drawDown(event, 5);
+				}
+				pencil.onMouseDrag = function(event) {
+					curPath.add(event.point);
+				}
+				pencil.onMouseUp = function(event) {
+					drawUp(event, 35);
+					console.log(picture.children);
+				}
+
+				fill = new Tool();
+				fill.onMouseDown = function(event) {
+
+					console.log("clicked fill");
+					var hit = picture.hitTest(event.point, { tolerance: 10, segments: true, stroke: true, fill: true});
+					if (hit) {
+						if (hit.item.closed){
+							previousGroups.push(picture.exportJSON());
+							undoneGroups = [];
+							$('#redoButton').css("color", "rgba(0,0,0,0.5)");
+							$('#undoButton').css("color", "black");
+							hit.item.fillColor = colorFromPicker;
+						}
+
+					} else {
+						console.log("no hit")
+					}
+
+				}
+
+				brush = new Tool();
+				brush.onMouseDown = function(event) {
+					drawDown(event, 25);
+				}
+				brush.onMouseDrag = function(event) {
+					curPath.add(event.point);
+				}
+				brush.onMouseUp = function(event) {
+					drawUp(event, 90);
+				}
+
+				crayon = new Tool();
+				crayon.onMouseDown = function(event) {
+					drawDown(event, 25);
+					curPath.opacity = .7;
+				}
+				crayon.onMouseDrag = function(event) {
+					curPath.add(event.point);
+				}
+				crayon.onMouseUp = function(event) {
+					drawUp(event, 90);
+					curPath.lastSegment.opacity = 0;
+				}
+				var mask = new Group();
+				eraser = new Tool();
+				eraser.onMouseDown = function(event) {
+					previousGroups.push(picture.exportJSON());
+					drawDown(event, 100);
+					var erasedGroup = new Group();
+					erasedGroup.children = picture.removeChildren();
+					erasedGroup.blendMode = "source-out";
+					erasedGroup.insert = false;
+
+					mask = new Group({
+						children: [curPath, erasedGroup],
+						blendMode: 'source-over'
+					})
+				}
+				eraser.onMouseDrag = function(event) {
+					curPath.add(event.point);
+				}
+				eraser.onMouseUp = function(event) {
+					picture = mask;
+					undoneGroups = [];
+					$('#redoButton').css("color", "rgba(0,0,0,0.5)");
+					$('#undoButton').css("color", "black");
+					console.log(picture.children);
+				}
+				nothing = new Tool();
+
+				undo = function(){
+
+					if (previousGroups.length == 0){
+						console.log("no previous groups");
+						return;
+					}
+					if (previousGroups.length == 1) {
+						undoneGroups.push(picture.exportJSON());
+						picture.removeChildren();
+						previousGroups.pop();
+						$('#redoButton').css("color", "black");
+						$('#undoButton').css("color", "rgba(0,0,0,0.5)");
+						return;
+					}
+					$('#redoButton').css("color", "black");
+					undoneGroups.push(picture.exportJSON());
+					picture.importJSON(previousGroups.pop());
+
+				}
+				redo = function(){
+
+					if (undoneGroups.length == 0) {
+						return;
+					}
+					previousGroups.push(picture.exportJSON());
+					picture.importJSON(undoneGroups.pop());
+					$('#undoButton').css("color", "black");
+					if (undoneGroups.length == 0) {
+						$('#redoButton').css("color", "rgba(0,0,0,0.5)");
+					}
+				}
+				getPicJSON = function(){
+					var pic = project.exportJSON();
+					return pic;
+				}
+				getPicGroupJSON = function() {
+					return picture.exportJSON();
+				}
+				getPreviousGroups = function() {
+					return JSON.stringify(previousGroups);
+				}
+				getUndoneGroups = function(){
+					return JSON.stringify(undoneGroups);
+				}
+				clearImage = function() {
+					picture.removeChildren();
+					undoneGroups = [];
+					previousGroups = [];
+				}
+			}
+		}
+
+		// Set up the mandala interactivity.
+		init(true);
+		switch(sessionStorage.getItem("currentTool")) {
+			case "pencil":
+				pressPButton();
+				break;
+			case "brush":
+				pressMButton();
+				break;
+			case "crayon":
+				pressHButton();
+				break;
+			case "eraser":
+				pressEButton();
+				break;
+			case "fill":
+				pressFButton();
+				break;
+			default:
+				pressPButton();
+		}
+	}
+
+</script>
+</head>
+<body style="overflow: hidden;">
+	<div class="container-fluid" style="height: 100vh; background-color: #e6d5aa">
+		<div class="row" style="height: 10vh">
+			<div id = "homeButton" style = "border-right: none" class="col-2 padButton" onclick="goHome()" onmouseover = "overPadButton('homeButton')" onmouseout = "outPadButton('homeButton')">
+				<i class="bi bi-arrow-left"></i>
+			</div>
+			<div id="undoButton" style = "border-right: none" class="col-2 padButton" onclick="undo()" onmouseover = "overPadButton('undoButton')" onmouseout = "outPadButton('undoButton')">
+				<i class="bi bi-arrow-counterclockwise"></i>
+			</div>
+			<div id = "redoButton" style = "border-right: none" class="col-2 padButton" onclick="redo()" onmouseover = "overPadButton('redoButton')" onmouseout = "outPadButton('redoButton')">
+				<i class="bi bi-arrow-clockwise"></i>
+			</div>
+			<div id="saveButton" style = "border-right: none" class="col-2 padButton" onclick="saveClick()" onmouseover = "overPadButton('saveButton')" onmouseout = "outPadButton('saveButton')">
+				<i class="bi bi-save2-fill"></i>
+			</div>
+			<div class="col-4 colorButton strokeColor" onclick="goToColorPicker()" onmouseover = "overPadButton('undoButton')" onmouseout = "outPadButton('undoButton')">
+				Color Palette
+			</div>
+		</div>
+
+		<div id="canvasSheet">
+            <canvas id="myCanvas" width="950px" height="1300px"></canvas>
+		</div>
+
+		<div id="myModal" class="modal">
+			<!-- Modal content -->
+			<div class="modal-content" style="width: 90%;">
+				<div class="container-fluid" style="border: .3vh solid #30251E;">
+					<div class="row" style="height: 10vh; font-size: 5vh; border-bottom: .3vh solid #30251E;">
+						<div class="col-2 modalClose" style="padding-top: 2vh; border-right: .3vh solid #30251E; background-color: #e6dbd0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z"/>
+                            </svg>
+                        </div>
+						<div class="col-10" id = "message">
+                            Save and Export
+                        </div>
+					</div>
+					<div class="row">
+						<canvas id="saveCanvas" width="1000px" height="1400px" style="width: 100%; height: 100%;"></canvas>
+					</div>
+                    <div class = "row d-flex justify-content-center" onclick="saveArtwork(); window.location.href='save_artwork_variant'" style="font-size: 5vh; background-color: #51624f; border-top: .3vh solid #30251E; height: 10vh">
+				        <div class="col-12" style="padding-top: 1vh; text-align: center; color: #ffffff">
+				            Save Artwork
+				        </div>
+                    </div>
+				</div>
+			</div>
+		</div>
+
+		<div id="NPM" class="modal">
+			<div class="modal-content" style="width: 90%; top: 16vh">
+				<div class="container-fluid" style="border: .3vh solid #30251E">
+					<div class="row" style="height: 16vh; font-size: 5vh;">
+						<div id="CloseNPM" class="col-2 modalClose" style="padding-top: 5vh; border-right: .3vh solid #30251E; background-color: #e6dbd0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z"/>
+                            </svg>
+                        </div>
+						<div class="col-10" id = "message">
+                            This will discard the current artwork
+                        </div>
+					</div>
+					<div class="row d-flex justify-content-center" onclick="clearImage(); newPageModal.style.display='none'" style="font-size: 5vh; background-color: #51624f; border-top: .3vh solid #30251E;" role = "button">
+						<div class="col-12" style="text-align: center; color: #ffffff">
+							Clear Canvas
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row" style="background: #ffffff; border-left: 1vw solid #e6d5aa; border-right: 1vw solid #e6d5aa; border-top: 1vh solid #e6d5aa; border-bottom: 1vh solid #e6d5aa; position: absolute; top: 85vh; height: 15.5vh; width: 100vw;">
+
+			<div id="pencilDiv" class="col-2">
+				<img id="pencilIcon" src ="{% static 'museum/images/pencil.png' %}" alt="pencil" class="icon" style="width: 100%;"></img>
+			</div>
+			<div id="brushDiv" class="col-2">
+				<!-- Brush image source: https://www.clipartmax.com/middle/m2i8d3i8b1H7Z5N4_brush-design-draw-paint-paintbrush-painting-comments-paint-brush-line-drawing-png/ -->
+				<img id="brushIcon" src ="{% static 'museum/images/brush.png' %}" alt="brush" class="icon" style="width: 105%;"></img>
+			</div>
+			<div id="crayonDiv" class="col-2">
+				<!-- Crayon image source: https://www.pngitem.com/middle/hbTTJJi_black-crayon-cliparts-silhouette-crayon-clip-art-hd/ -->
+				<img id="crayonIcon" src ="{% static 'museum/images/crayon.png' %}" alt="crayon" class="icon" style="top: 0.5vh; right: 1vw; width: 120%;"></img>
+			</div>
+			<div id="eraserDiv" class="col-2">
+				<!-- Eraser image source: https://www.pngitem.com/middle/iwwTJmT_eraser-clipart-une-hd-png-download/ -->
+				<img id="eraserIcon" src ="{% static 'museum/images/eraser.png' %}" alt="eraser" class="icon" style="top: 1vh; left: 1vh; width: 100%;"></img>
+			</div>
+			<div id="fillDiv" class="col-2">
+				<!-- Fill Bucket image source: https://www.clipartmax.com/middle/m2H7i8N4i8N4G6b1_paint-bucket-color-comments-paint-bucket-icon/ -->
+				<img id="fillIcon" src ="{% static 'museum/images/bucket.png' %}" alt="fill" class="icon" style="left: 1vh; width: 100%"></img>
+			</div>
+            <div class="col-2">
+				<a id = "newPageButton" style = "padding-top: 4.5vh; color: #000000; background-color: #ffffff; border: none" class = 'btn btn-secondary d-flex justify-content-center' role = 'button' aria-pressed = 'true'>
+				    <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" fill="currentColor" class="bi bi-file-earmark-plus" viewBox="0 0 16 16">
+                        <path d="M8 6.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
+                    </svg>
+				</a>
+            </div>
+		</div>
+
+	</div>
+	<script type="text/javascript">
+			var currToolButton = pressPButton;
+			function pressMButton() {
+				brush.activate();
+				$(".icon").css("padding-top", "5vh");
+				$("#brushIcon").css("padding-top", "1vh");
+				currToolButton = pressMButton;
+				sessionStorage.setItem('currentTool', "brush");
+			}
+			function pressHButton() {
+				crayon.activate();
+				$(".icon").css("padding-top", "5vh");
+				$("#crayonIcon").css("padding-top", "1vh");
+				currToolButton = pressHButton;
+				sessionStorage.setItem('currentTool', "crayon");
+			}
+			function pressEButton() {
+				eraser.activate();
+				$(".icon").css("padding-top", "5vh");
+				$("#eraserIcon").css("padding-top", "1vh");
+				currToolButton = pressEButton;
+				sessionStorage.setItem('currentTool', "eraser");
+			}
+			function pressFButton() {
+				fill.activate();
+				$(".icon").css("padding-top", "5vh");
+				$("#fillIcon").css("padding-top", "1vh");
+				currToolButton = pressFButton;
+				sessionStorage.setItem('currentTool', "fill");
+			}
+			function pressPButton() {
+				pencil.activate();
+				$(".icon").css("padding-top", "5vh");
+				$("#pencilIcon").css("padding-top", "1vh");
+				currToolButton = pressPButton;
+				sessionStorage.setItem('currentTool', "pencil");
+			}
+			$('body').on("click", "#pencilDiv", pressPButton);
+			$('body').on("click", "#brushDiv", pressMButton);
+			$('body').on("click", "#crayonDiv", pressHButton);
+			$('body').on("click", "#eraserDiv", pressEButton);
+			$('body').on("click", "#fillDiv", pressFButton);
+
+
+			var picToSave;
+			function saveClick(){
+				picToSave = getPicJSON();
+				console.log(picToSave);
+				saveScope.activate();
+				with(paper) {
+					project.activeLayer.removeChildren();
+					project.importJSON(picToSave);
+				}
+				$("#saveCanvas").css("width", "100%");
+				$("#saveCanvas").css("height", "100%");
+				nothing.activate();
+			}
+
+			function saveState() {
+				currentPic = getPicGroupJSON();
+				prevGroups = getPreviousGroups();
+				unGroups = getUndoneGroups();
+				sessionStorage.setItem("currentPic", currentPic);
+				sessionStorage.setItem('previousGroups', prevGroups);
+				sessionStorage.setItem('undoneGroups', unGroups);
+
+			}
+
+			function goHome(){
+				location.href = 'themed_room_v1';
+			}
+
+			function goToColorPicker(){
+				location.href = "color_picker";
+			}
+
+			window.onunload = function(){
+				saveState();
+			}
+
+			//Base Modal code from W3school
+			// Get the modal
+			var modal = document.getElementById("myModal");
+			var btn = document.getElementById("saveButton");
+			var span = document.getElementsByClassName("modalClose")[0];
+			btn.onclick = function() {
+				saveClick();
+				modal.style.display = "block";
+			}
+			span.onclick = function() {
+				modal.style.display = "none";
+				mainScope.activate();
+				currToolButton();
+			}
+
+			function saveArtwork() {
+				var savedPics = JSON.parse(localStorage.getItem("savedPics"));
+				if (savedPics == null) {
+					savedPics = [];
+				}
+                picToSave = canvas.toDataURL('image/png');
+				savedPics.push(picToSave);
+				console.log(savedPics);
+				localStorage.setItem("savedPics", JSON.stringify(savedPics));
+			}
+
+			var newPageBtn = document.getElementById("newPageButton");
+			var newPageModal = document.getElementById("NPM");
+			var newPageModalClose = document.getElementById("CloseNPM");
+			newPageBtn.onclick = function(){
+				newPageModal.style.display = "block";
+			}
+			newPageModalClose.onclick = function(){
+				newPageModal.style.display = "none";
+			}
+
+			// When the user clicks anywhere outside of the modal, close it
+			window.onclick = function(event) {
+				if (event.target == modal) {
+					modal.style.display = "none";
+				}
+				if (event.target == newPageModal) {
+					newPageModal.style.display = "none";
+				}
+			}
+
+			function overPadButton(button) {
+				prevGroups = getPreviousGroups();
+				unGroups = getUndoneGroups();
+				if (!(button == "undoButton" || button == "redoButton")) {
+					document.getElementById(button).style.backgroundColor = "#51624f";
+				}
+			}
+			function outPadButton(button) {
+				document.getElementById(button).style.backgroundColor = "#AEBEA1";
+			}
+	</script>
+</body>
+</html>

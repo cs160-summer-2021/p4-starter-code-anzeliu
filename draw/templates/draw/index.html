@@ -26,24 +26,53 @@
     var tool = new paper.Tool();
     var path = new paper.Path();
     var uid = Date.now() % 10000;
-    path.strokeColor = "red";
+    var letters = '0123456789ABCDEF';
+    var color = '\"#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    color += '\"'
+    path.strokeColor = color;
+    var users = {};
+
+    
 
     // getting the URL (you may want to use for Exercise 3)
     var url = window.location.href;
+    var parameterValue;
+    function parseURL(url) {
+        var query = url.split('?');
+        var param = query[1].split('size=');
+        return param[1];
+    }
+    parameterValue = parseURL(url);
 
     var socket = new WebSocket(
         'ws://' + window.location.host + '/ws/draw');
 
+        
     tool.onMouseMove = function(event) { //http://paperjs.org/reference/tool/ path examples
-       path.add(event.point);
-       // You may need to add code here if you want to pass any other information.
-       socket.send("{\"x\" : " + event.point.x + ", \"y\" : " + event.point.y + ", \"uid\" : " + uid + "}" );
+        if (parameterValue == "small") {
+            // path.add(event.point);
+            // You may need to add code here if you want to pass any other information.
+            socket.send("{\"x\" : " + event.point.x + ", \"y\" : " + event.point.y + ", \"uid\" : " + uid + ", \"color\" : " + color + "}" );
+        }
     }
 
     socket.onmessage = function(receivedMessage) {
         var received = JSON.parse(receivedMessage.data);
-        console.log("Received: " + JSON.stringify(received));
-        // You will probably want to add some code here to draw more lines.
+            console.log("Received: " + JSON.stringify(received));
+            // You will probably want to add some code here to draw more lines.
+            var point = new paper.Point(received["x"], received["y"]);
+            var otherUID = received["uid"];
+            var otherColor = received["color"]
+        if (parameterValue == "large" || (parameterValue == "small" && otherUID == uid)) {
+            if ((otherUID in users) == false) {
+                users[otherUID] = new paper.Path();
+                users[otherUID].strokeColor = otherColor;
+            }
+            users[otherUID].add(point);
+        }
     }
 
     socket.onclose = function(e) {

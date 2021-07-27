@@ -1,0 +1,141 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Home</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style type="text/css">
+
+        #museumName {
+          color: #30251E;
+          margin: auto;
+          text-align: center;
+          font-family: "Mulish";
+          font-weight: 600;
+          font-size: 25px;
+	        line-height: 100%;
+        }
+
+        #enterMuseumButton {
+            width: 80%;
+            height: 100%;
+            margin: auto;
+            border: 1px solid #948a84;
+            box-sizing: border-box;
+            border-radius: 12px;
+	          background-color: #E6DBD0;
+            box-shadow: 1px 1px 6px 1px #85786f;
+	    }
+
+	    #enterMuseumText {
+            color: #30251E;
+            margin: auto;
+            text-align: center;
+            font-family: "Mulish";
+            font-weight: 400;
+            font-size: 25px;
+            padding-top: 30px;
+	        line-height: 100%;
+	    }
+
+        #navigateButton {
+            width: 100%;
+            height: 100%;
+            margin: auto;
+            border: 1px solid #948a84;
+            box-sizing: border-box;
+	        background: #E6DBD0;
+          padding-left: 10px;
+          padding-right: 10px;
+          box-shadow: 1px 1px 3px 1px #85786f;
+          border-top-left-radius: 3px;
+          border-top-right-radius: 3px;
+        }
+
+        #navigateButtonText {
+            color: #30251E;
+            margin: auto;
+            text-align: center;
+            font-family: "Mulish";
+            font-weight: 500;
+            font-size: 18px;
+            padding-top: 3.2vh;
+	        line-height: 100%;
+	       }
+
+
+    </style>
+
+</head>
+<body>
+	<div class="container-fluid" style="background-color: #A2B4AC">
+        <div class = "row" style="height: 10vh; background-color: #E6DBD0; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px;
+                                  border-bottom: 1px solid #948a84; box-shadow: 1px 1px 6px 1px #85786f;">
+            <div id = "museumName">
+                Collaborative Museum
+            </div>
+        </div>
+        <div class = "row" style="height: 6vh">
+        </div>
+		<div class = "row" style="height: 40vh; background-image: url(./../static/museum/images/home.jpeg); background-size: 110%; border: 10px solid #829FB7; border-radius: 18px">
+        </div>
+        <div class = "row" style="height: 8vh">
+        </div>
+		<div class = "row" style="height: 90px;">
+			<div id="enterMuseumButton" onclick="location.href = 'main_hall_variant';">
+					<div id = "enterMuseumText">
+						Enter Museum
+					</div>
+			</div>
+		</div>
+        <div class = "row" style="height: 89px">
+        </div>
+        <div class = "row" style = "height: 9vh">
+            <div id = "navigateButton" class = "col-4" onclick="location.href = 'home_variant'">
+                <div id = "navigateButtonText">
+                    Home
+                </div>
+            </div>
+            <div id = "navigateButton" class = "col-4" onclick="location.href = 'themed_room_v1_variant'">
+                <div id = "navigateButtonText">
+                    My Theme
+                </div>
+            </div>
+            <div id = "navigateButton" class = "col-4" onclick="location.href = 'drawing_pad_variant'">
+                <div id = "navigateButtonText">
+                    My Artwork
+                </div>
+            </div>
+        </div>
+	</div>
+
+	<script>
+		var enterMuseumButton = document.getElementById('enterMuseumButton');
+		enterMuseumButton.onmouseover = function() {
+			mouseOverStart()
+		};
+		enterMuseumButton.onmouseout = function() {
+			mouseOutStart()
+		};
+		function mouseOverStart() {
+			enterMuseumButton.style.border = "6px solid #30251E;";
+		}
+		function mouseOutStart() {
+			enterMuseumButton.style.border = "2px solid #30251E;";
+		}
+	</script>
+</body>
+<script>
+
+</script>
+</html>

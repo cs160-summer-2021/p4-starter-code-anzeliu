@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'channels',
     'draw',
+    'museum',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
